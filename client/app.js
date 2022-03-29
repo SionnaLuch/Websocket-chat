@@ -1,3 +1,5 @@
+const socket = io();
+socket.on('message', ({ author, content }) => addMessage(author, content))
 const data = {
     loginForm: document.getElementById('welcome-form'),
     messagesSection: document.getElementById('messages-section'),
@@ -18,27 +20,31 @@ const data = {
       userName = data.userNameInput.value;
       data.loginForm.classList.remove('show');
       data.messagesSection.classList.add('show');
-      console.log(userName);
+      socket.emit('join', userName);
     } else {
       alert('What is your name?');
     }
   }
   
-  function sendMessage(event) {
-    event.preventDefault();
+  function sendMessage(e) {
+    e.preventDefault();
   
     let messageContent = data.messageContentInput.value;
-    if (messageContent) {
-      addMessage(userName, messageContent);
-      data.messageContentInput.value = '';
-    } else {
-      alert('Write message...')
+  
+    if(!messageContent.length) {
+      alert('You have to type something!');
     }
-  };
+    else {
+      addMessage(userName, messageContent);
+      socket.emit('message', { author: userName, content: messageContent })
+      data.messageContentInput.value = '';
+    }
+  
+  }
   
   function addMessage(author, content) {
   
-    const message = document.createElement('list');
+    const message = document.createElement('li');
     message.classList.add('message');
     message.classList.add('message--received');
     if (author === userName) message.classList.add('message--self');
